@@ -1,0 +1,5 @@
+title = "gitleaks config - Joaquin-IA"
+
+# Usa las reglas por defecto de gitleaks (detecta llaves/API comunes).
+[extend]
+useDefault = true

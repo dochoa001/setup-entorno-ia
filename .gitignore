@@ -1,0 +1,13 @@
+# Claves reales: NUNCA subir
+.env
+claves/.env
+**/.env
+
+# Basura del sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporales
+*.tmp
+~$*
