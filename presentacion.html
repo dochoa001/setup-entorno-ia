@@ -1,0 +1,466 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tu sistema de IA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Layout: mazo de diapositivas a pantalla; una visible a la vez; barra superior + navegación inferior.
+   Color = información: verde = teoría, ámbar = práctica. */
+:root{
+  --bg:#f3f5f3; --surface:#ffffff; --surface-2:#eef1ee;
+  --ink:#16201c; --muted:#5a655f; --line:#e0e4df;
+  --theory:#1f7a5a; --theory-soft:#e6f1eb;
+  --practice:#bd7a1f; --practice-soft:#f6ecdb;
+  --accent:var(--theory);
+  --font-display:'Fraunces',Georgia,'Times New Roman',serif;
+  --font-sans:'IBM Plex Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --font-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+  --maxw:1080px;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1512; --surface:#16201b; --surface-2:#1b2620;
+  --ink:#e9efea; --muted:#9aa49e; --line:#273129;
+  --theory:#49c89d; --theory-soft:#15241d;
+  --practice:#e0a44c; --practice-soft:#2a2015;
+  color-scheme:dark;
+}}
+:root[data-theme="dark"]{
+  --bg:#0e1512; --surface:#16201b; --surface-2:#1b2620;
+  --ink:#e9efea; --muted:#9aa49e; --line:#273129;
+  --theory:#49c89d; --theory-soft:#15241d;
+  --practice:#e0a44c; --practice-soft:#2a2015;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family:var(--font-sans); font-size:16px; line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+img{max-width:100%}
+[hidden]{display:none!important}
+
+/* ---------- marco ---------- */
+.app{display:flex; flex-direction:column; min-height:100%}
+.topbar{
+  position:sticky; top:0; z-index:20; background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:saturate(1.2) blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.topbar-in{
+  max-width:var(--maxw); margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:10px; display:flex; align-items:center; gap:14px;
+}
+.brand{display:flex; align-items:baseline; gap:10px; min-width:0}
+.brand b{font-weight:700; font-size:.92rem; letter-spacing:.2px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.brand span{font-family:var(--font-mono); font-size:.72rem; color:var(--muted); white-space:nowrap}
+.spacer{flex:1}
+.iconbtn{
+  font-family:var(--font-sans); font-size:.8rem; color:var(--ink);
+  background:var(--surface); border:1px solid var(--line); border-radius:999px;
+  padding:6px 12px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+}
+.iconbtn:hover{border-color:var(--muted)}
+.progress{height:3px; background:var(--line)}
+.progress > i{display:block; height:100%; background:var(--accent); width:0; transition:width .35s ease}
+
+/* ---------- escenario ---------- */
+.stage{flex:1; display:flex; flex-direction:column}
+.slides{
+  flex:1; max-width:var(--maxw); width:100%; margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:clamp(22px,5vw,56px);
+}
+.slide{animation:rise .4s ease both}
+@media (prefers-reduced-motion:reduce){.slide{animation:none}}
+@keyframes rise{from{opacity:0; transform:translateY(10px)}to{opacity:1; transform:none}}
+
+.eyebrow{
+  display:inline-flex; align-items:center; gap:8px; font-family:var(--font-mono);
+  font-size:.72rem; letter-spacing:.5px; text-transform:uppercase; font-weight:500;
+  padding:5px 11px; border-radius:999px; margin:0 0 18px;
+}
+.eyebrow::before{content:""; width:8px; height:8px; border-radius:999px; background:currentColor}
+.t-theory{color:var(--theory); background:var(--theory-soft)}
+.t-practice{color:var(--practice); background:var(--practice-soft)}
+[data-kind="practice"]{--accent:var(--practice)}
+[data-kind="theory"]{--accent:var(--theory)}
+
+h1.title{
+  font-family:var(--font-display); font-weight:600; line-height:1.05;
+  font-size:clamp(1.9rem,5.5vw,3.1rem); margin:0 0 .5em; text-wrap:balance;
+  letter-spacing:-.01em;
+}
+h2.title{
+  font-family:var(--font-display); font-weight:600; line-height:1.08;
+  font-size:clamp(1.5rem,4.2vw,2.3rem); margin:0 0 .55em; text-wrap:balance;
+}
+.lead{font-size:clamp(1.02rem,2.4vw,1.2rem); color:var(--muted); max-width:62ch; margin:0 0 1.3em}
+p{max-width:64ch}
+.note{font-size:.9rem; color:var(--muted)}
+
+/* portada */
+.cover{display:flex; flex-direction:column; justify-content:center; min-height:min(66vh,560px)}
+.cover .kicker{font-family:var(--font-mono); font-size:.8rem; color:var(--accent); letter-spacing:1px; text-transform:uppercase; margin:0 0 18px}
+.cover ol{display:flex; flex-wrap:wrap; gap:10px; padding:0; margin:22px 0 0; list-style:none}
+.cover ol li{font-family:var(--font-mono); font-size:.8rem; color:var(--muted); border:1px solid var(--line); border-radius:999px; padding:6px 12px}
+
+/* tarjetas */
+.cards{display:grid; gap:16px; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); margin-top:8px}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px; min-width:0}
+.card .cap{font-family:var(--font-mono); font-size:.72rem; text-transform:uppercase; letter-spacing:.5px; color:var(--accent); margin:0 0 8px}
+.card h3{margin:0 0 8px; font-size:1.08rem; font-weight:600}
+.card p{font-size:.93rem; color:var(--muted); margin:0}
+.card .for{margin-top:12px; font-size:.82rem; color:var(--ink); font-weight:500}
+.card.lift{border-top:3px solid var(--accent)}
+
+/* lista de conceptos */
+.defs{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(250px,1fr)); margin-top:6px}
+.def{display:flex; gap:12px; align-items:flex-start; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; min-width:0}
+.def .k{font-family:var(--font-mono); font-size:.76rem; color:var(--accent); background:var(--theory-soft); border-radius:8px; padding:4px 8px; white-space:nowrap; flex:none}
+[data-kind="practice"] .def .k{background:var(--practice-soft)}
+.def .d{min-width:0}
+.def .d b{display:block; font-size:.96rem; margin-bottom:2px}
+.def .d span{font-size:.88rem; color:var(--muted)}
+
+/* bloque de código / archivos */
+.code{
+  font-family:var(--font-mono); font-size:.83rem; line-height:1.7;
+  background:var(--surface-2); border:1px solid var(--line); border-radius:14px;
+  padding:16px 18px; overflow-x:auto; margin:4px 0 0;
+}
+.code .fn{color:var(--accent); font-weight:500}
+.code .cm{color:var(--muted)}
+.filerow{display:grid; grid-template-columns:auto 1fr; gap:10px 16px; align-items:baseline; margin-top:6px}
+.filerow .fn{font-family:var(--font-mono); font-size:.85rem; color:var(--accent); white-space:nowrap}
+.filerow .ex{font-size:.9rem; color:var(--muted); min-width:0}
+
+/* diagrama de arquitectura */
+.arch{display:grid; gap:14px; margin-top:6px}
+.arch .root{font-family:var(--font-mono); font-size:.82rem; color:var(--muted)}
+.arch .blocks{display:grid; gap:14px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+.block{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; border-left:3px solid var(--accent); min-width:0}
+.block .n{font-family:var(--font-mono); font-size:.8rem; color:var(--accent); font-weight:500}
+.block h4{margin:4px 0 6px; font-size:1rem}
+.block p{font-size:.87rem; color:var(--muted); margin:0}
+.rule{display:flex; gap:12px; align-items:flex-start; background:var(--theory-soft); border-radius:14px; padding:16px; margin-top:4px}
+.rule .big{font-family:var(--font-display); font-size:1.4rem; line-height:1; color:var(--theory); flex:none}
+.rule p{margin:0; font-size:.95rem}
+
+/* pasos prácticos */
+.steps{display:grid; gap:14px; margin-top:6px}
+.step{display:grid; grid-template-columns:auto 1fr; gap:16px; align-items:start; background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px 18px; min-width:0}
+.step .num{font-family:var(--font-display); font-size:1.4rem; color:var(--practice); line-height:1; width:1.4em; flex:none}
+.step .b{min-width:0}
+.step .b b{display:block; margin-bottom:3px}
+.step .b span{font-size:.9rem; color:var(--muted)}
+.prompt{position:relative; margin-top:16px}
+.prompt pre{
+  font-family:var(--font-mono); font-size:.82rem; line-height:1.6; white-space:pre-wrap;
+  background:var(--surface-2); border:1px solid var(--line); border-radius:14px; padding:16px 18px; margin:0;
+}
+.copy{position:absolute; top:10px; right:10px}
+.actions{display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); margin-top:6px}
+.action{background:var(--surface); border:1px solid var(--line); border-radius:14px; padding:16px; min-width:0}
+.action .say{font-family:var(--font-mono); font-size:.86rem; color:var(--practice); background:var(--practice-soft); border-radius:8px; padding:8px 10px; display:block; margin-bottom:8px}
+.action p{font-size:.88rem; color:var(--muted); margin:0}
+
+/* cierre */
+.closing .big-list{display:grid; gap:12px; margin-top:8px; max-width:62ch}
+.closing .big-list div{display:flex; gap:12px; align-items:baseline}
+.closing .big-list .fn{font-family:var(--font-mono); color:var(--accent); white-space:nowrap}
+
+/* ---------- navegación inferior ---------- */
+.nav{
+  position:sticky; bottom:0; z-index:20; background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(8px); border-top:1px solid var(--line);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+.nav-in{
+  max-width:var(--maxw); margin:0 auto;
+  padding-left:max(16px,env(safe-area-inset-left,0px)); padding-right:max(16px,env(safe-area-inset-right,0px));
+  padding-block:10px; display:flex; align-items:center; gap:12px;
+}
+.dots{display:flex; gap:7px; flex:1; flex-wrap:wrap; justify-content:center}
+.dot{width:9px; height:9px; border-radius:999px; background:var(--line); border:none; padding:0; cursor:pointer}
+.dot[aria-current="true"]{background:var(--accent); transform:scale(1.25)}
+.navbtn{
+  font-family:var(--font-sans); font-weight:600; font-size:.85rem;
+  background:var(--ink); color:var(--bg); border:none; border-radius:999px;
+  padding:9px 16px; cursor:pointer; display:inline-flex; align-items:center; gap:6px;
+}
+.navbtn[disabled]{opacity:.35; cursor:default}
+.navbtn.ghost{background:var(--surface); color:var(--ink); border:1px solid var(--line)}
+.count{font-family:var(--font-mono); font-size:.76rem; color:var(--muted); white-space:nowrap}
+
+@media (max-width:560px){
+  .brand span{display:none}
+  .navbtn span.lbl{display:none}
+  .count{order:-1}
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header class="topbar">
+    <div class="topbar-in">
+      <div class="brand"><b>Tu sistema de trabajo con IA</b><span>ferremayoreo</span></div>
+      <div class="spacer"></div>
+      <span class="count" id="count">1 / 9</span>
+      <button class="iconbtn" id="theme" type="button" aria-label="Cambiar tema">Tema</button>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+  </header>
+
+  <main class="stage">
+    <div class="slides" id="slides">
+
+      <!-- 1 · PORTADA -->
+      <section class="slide cover" data-kind="theory" data-label="Inicio">
+        <p class="kicker">Guía rápida · 10 minutos</p>
+        <h1 class="title">Cómo funciona tu sistema, y cómo sacarle provecho</h1>
+        <p class="lead">Una guía visual para entender la carpeta que armamos: qué es cada cosa, por qué está así, y cómo usarla todos los días. Primero lo esencial, luego lo pones en práctica, y cerramos con el porqué.</p>
+        <ol>
+          <li>Las 3 formas de usar IA</li>
+          <li>Cómo "habla" la IA</li>
+          <li>Conceptos clave</li>
+          <li>Tu arquitectura</li>
+          <li>Manos a la obra</li>
+        </ol>
+      </section>
+
+      <!-- 2 · TEORÍA: 3 entornos -->
+      <section class="slide" data-kind="theory" data-label="3 formas de usar IA" hidden>
+        <span class="eyebrow t-theory">Teoría</span>
+        <h2 class="title">Hay tres formas de usar la IA</h2>
+        <p class="lead">No es "una sola IA". Es el mismo cerebro en tres lugares distintos. Esto aplica para cualquier IA (Claude, ChatGPT, etc.): lo que cambia es dónde la usas.</p>
+        <div class="cards">
+          <div class="card lift">
+            <p class="cap">1 · Chat</p>
+            <h3>Una conversación</h3>
+            <p>Le preguntas y te responde. No recuerda tus archivos: cada vez le tienes que volver a dar el contexto.</p>
+            <p class="for">Ideal para: dudas sueltas y rápidas.</p>
+          </div>
+          <div class="card lift">
+            <p class="cap">2 · Entorno de trabajo</p>
+            <h3>La IA con tus archivos</h3>
+            <p>Trabaja sobre tu carpeta, desde el celular o la computadora, y conserva el contexto de una vez para la siguiente.</p>
+            <p class="for">Ideal para: operar tu día a día.</p>
+          </div>
+          <div class="card lift">
+            <p class="cap">3 · Entorno de código</p>
+            <h3>La IA que construye</h3>
+            <p>Crea y arma cosas: montar el sistema, automatizar tareas, generar los archivos base.</p>
+            <p class="for">Ideal para: construir y configurar.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3 · TEORÍA: cómo habla la IA (MD) -->
+      <section class="slide" data-kind="theory" data-label="Cómo habla la IA" hidden>
+        <span class="eyebrow t-theory">Teoría</span>
+        <h2 class="title">Cómo "habla" la IA: archivos de texto</h2>
+        <p class="lead">La IA no guarda lo importante en su memoria, sino en archivos de texto sencillos (los <span style="font-family:var(--font-mono)">.md</span>). Son como notas que ella misma lee antes de ayudarte. Ese es el idioma común.</p>
+        <div class="filerow">
+          <span class="fn">AGENTS.md</span><span class="ex">Las reglas: cómo ordena y dónde guarda cada cosa.</span>
+          <span class="fn">CLAUDE.md</span><span class="ex">Un ajuste para que Claude lea esas mismas reglas.</span>
+          <span class="fn">README.md</span><span class="ex">Qué es cada carpeta, en pocas palabras.</span>
+          <span class="fn">index.md</span><span class="ex">El mapa: una línea por página, para no releer todo.</span>
+          <span class="fn">log.md</span><span class="ex">La bitácora: qué cambió y cuándo.</span>
+        </div>
+        <p class="note" style="margin-top:16px">La ventaja: como todo vive en archivos (no en el programa), tu información es tuya y portátil. La abres con la IA que quieras, hoy o en un año.</p>
+      </section>
+
+      <!-- 4 · TEORÍA: conceptos clave -->
+      <section class="slide" data-kind="theory" data-label="Conceptos clave" hidden>
+        <span class="eyebrow t-theory">Teoría</span>
+        <h2 class="title">Cinco palabras que conviene conocer</h2>
+        <div class="defs">
+          <div class="def"><span class="k">Cerebro</span><span class="d"><b>Tu base de conocimiento</b><span>Toda tu información ordenada en archivos. Es lo que la IA consulta para ayudarte con criterio.</span></span></div>
+          <div class="def"><span class="k">Contexto</span><span class="d"><b>Lo que la IA necesita saber</b><span>Quién es cada quién, qué quedó pendiente, de qué va cada proyecto.</span></span></div>
+          <div class="def"><span class="k">Habilidad</span><span class="d"><b>Una acción lista para pedir</b><span>Instrucciones que la IA ejecuta a tu orden: "archiva esta minuta", "hazme mi revisión semanal".</span></span></div>
+          <div class="def"><span class="k">Agente</span><span class="d"><b>Un asistente con un propósito</b><span>Una IA afinada para una tarea fija, como darte la vista única de pendientes.</span></span></div>
+          <div class="def"><span class="k">Formato</span><span class="d"><b>Un molde reutilizable</b><span>La plantilla base de una ficha, una minuta o un cliente, para no empezar de cero.</span></span></div>
+          <div class="def"><span class="k">Distribución</span><span class="d"><b>Dónde vive cada cosa</b><span>Un lugar por tema y por persona, para que nada se pierda entre correos y juntas.</span></span></div>
+        </div>
+      </section>
+
+      <!-- 5 · TEORÍA: arquitectura -->
+      <section class="slide" data-kind="theory" data-label="Tu arquitectura" hidden>
+        <span class="eyebrow t-theory">Teoría</span>
+        <h2 class="title">La arquitectura de tu sistema</h2>
+        <p class="lead">Una sola carpeta, con tres bloques claros. Simple a propósito.</p>
+        <div class="arch">
+          <div class="blocks">
+            <div class="block"><p class="n">plantillas/</p><h4>Tu caja de moldes</h4><p>Habilidades, agentes y formatos que se reutilizan en todo el sistema.</p></div>
+            <div class="block"><p class="n">01-Ferremayoreo/</p><h4>Tu negocio</h4><p>Equipo (una carpeta por persona), proyectos, correo y la wiki de la empresa.</p></div>
+            <div class="block"><p class="n">02-Consultoria/</p><h4>Tus clientes</h4><p>Una carpeta por cliente, con su wiki, contexto y recursos.</p></div>
+          </div>
+          <div class="rule"><span class="big">★</span><p><b>La regla de oro:</b> tú alimentas información, la IA la ordena y la mantiene. Si algo te obliga a acomodar archivos a mano, está mal planteado: se lo pides a ella.</p></div>
+          <p class="note">Y como respaldo, todo puede guardarse en GitHub: una copia en la nube con historial, para no perder nada y abrirlo desde donde estés.</p>
+        </div>
+      </section>
+
+      <!-- 6 · PRÁCTICA: enciéndelo -->
+      <section class="slide" data-kind="practice" data-label="Enciéndelo" hidden>
+        <span class="eyebrow t-practice">Práctica · hazlo ahora</span>
+        <h2 class="title">Enciende tu sistema</h2>
+        <p class="lead">Es una sola vez. Abre la carpeta con tu asistente de IA y deja que te guíe.</p>
+        <div class="steps">
+          <div class="step"><span class="num">1</span><span class="b"><b>Abre la carpeta con tu IA</b><span>En Cowork o en el entorno de código, y dale acceso a ella.</span></span></div>
+          <div class="step"><span class="num">2</span><span class="b"><b>Pégale el mensaje de abajo</b><span>Él se lee las instrucciones y empieza a preguntarte.</span></span></div>
+          <div class="step"><span class="num">3</span><span class="b"><b>Contesta con calma</b><span>Lo que no sepas, queda como pendiente. Nada se traba por un dato faltante.</span></span></div>
+        </div>
+        <div class="prompt">
+          <button class="iconbtn copy" id="copyBtn" type="button">Copiar</button>
+          <pre id="promptText">Léete EMPIEZA-AQUI.md y AGENTS.md de esta carpeta y ayúdame a configurar mi sistema. Guíame con preguntas, de a poco. Empieza por los datos de Ferremayoreo; lo que no sepa, déjalo como pendiente. No toques nada fuera de esta carpeta.</pre>
+        </div>
+      </section>
+
+      <!-- 7 · PRÁCTICA: día a día -->
+      <section class="slide" data-kind="practice" data-label="Tu día a día" hidden>
+        <span class="eyebrow t-practice">Práctica · tu rutina</span>
+        <h2 class="title">Tres cosas que le pedirás seguido</h2>
+        <p class="lead">No hay que aprender comandos. Se lo dices con tus palabras.</p>
+        <div class="actions">
+          <div class="action"><span class="say">"Archiva esta minuta"</span><p>Pegas la nota o transcripción de una junta y la guarda en la persona que toque, con sus acuerdos y pendientes.</p></div>
+          <div class="action"><span class="say">"Hazme mi revisión semanal"</span><p>Te arma el panorama: qué está vencido, a quién seguir y en qué conviene avanzar según tu tiempo.</p></div>
+          <div class="action"><span class="say">"Quiero integrar un nuevo cliente"</span><p>Te crea su espacio y toma el contexto, listo para operar.</p></div>
+        </div>
+        <p class="note" style="margin-top:16px">Mismo patrón para tu equipo: "da de alta a [persona]" le abre su ficha, sus pendientes y su seguimiento.</p>
+      </section>
+
+      <!-- 8 · TEORÍA: por qué funciona -->
+      <section class="slide" data-kind="theory" data-label="Por qué funciona" hidden>
+        <span class="eyebrow t-theory">Teoría · el porqué</span>
+        <h2 class="title">Por qué este sistema funciona</h2>
+        <p class="lead">Ahora que lo viste en acción, cierra el círculo con la idea de fondo.</p>
+        <div class="cards">
+          <div class="card lift"><p class="cap">Código</p><h3>Sirve para crear</h3><p>Con el entorno de código se construye y se afina el sistema. Es el taller.</p></div>
+          <div class="card lift"><p class="cap">Cowork</p><h3>Sirve para operarlo</h3><p>Desde el celular o la compu, manteniendo el contexto. Es tu día a día, estés donde estés.</p></div>
+          <div class="card lift"><p class="cap">Archivos + GitHub</p><h3>Guardan el cerebro</h3><p>Tu información vive en archivos, respaldada en GitHub con historial. No dependes de un solo equipo.</p></div>
+        </div>
+      </section>
+
+      <!-- 9 · CIERRE -->
+      <section class="slide closing" data-kind="theory" data-label="Siguientes pasos" hidden>
+        <span class="eyebrow t-theory">Cierre</span>
+        <h2 class="title">Tu siguiente paso</h2>
+        <p class="lead">Todo lo demás se aprende usándolo. Empieza por aquí:</p>
+        <div class="big-list">
+          <div><span class="fn">EMPIEZA-AQUI.md</span><span>Ábrelo con tu IA y deja que te configure.</span></div>
+          <div><span class="fn">index.md</span><span>El mapa de qué hay y dónde, cuando quieras ubicarte.</span></div>
+          <div><span class="fn">AGENTS.md</span><span>Las reglas completas, por si tienes curiosidad.</span></div>
+        </div>
+        <p class="note" style="margin-top:20px">La idea de fondo es simple: tú aportas lo que sabes, la IA lo ordena y le da seguimiento. Y mientras más lo alimentas, más te ayuda.</p>
+      </section>
+
+    </div>
+  </main>
+
+  <nav class="nav">
+    <div class="nav-in">
+      <button class="navbtn ghost" id="prev" type="button"><span class="lbl">Anterior</span><span aria-hidden="true">‹</span></button>
+      <div class="dots" id="dots"></div>
+      <button class="navbtn" id="next" type="button"><span class="lbl">Siguiente</span><span aria-hidden="true">›</span></button>
+    </div>
+  </nav>
+
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var dotsWrap = document.getElementById('dots');
+  var prev = document.getElementById('prev');
+  var next = document.getElementById('next');
+  var bar = document.getElementById('bar');
+  var count = document.getElementById('count');
+  var i = 0;
+
+  // dots
+  slides.forEach(function(s, idx){
+    var b = document.createElement('button');
+    b.className = 'dot';
+    b.type = 'button';
+    b.title = s.getAttribute('data-label') || ('Sección ' + (idx+1));
+    b.setAttribute('aria-label', b.title);
+    b.addEventListener('click', function(){ go(idx); });
+    dotsWrap.appendChild(b);
+  });
+  var dots = Array.prototype.slice.call(dotsWrap.children);
+
+  function render(){
+    slides.forEach(function(s, idx){ s.hidden = idx !== i; });
+    dots.forEach(function(d, idx){ d.setAttribute('aria-current', idx === i ? 'true' : 'false'); });
+    var kind = slides[i].getAttribute('data-kind') || 'theory';
+    document.documentElement.setAttribute('data-kind', kind); // pinta el acento activo
+    prev.disabled = i === 0;
+    next.disabled = i === slides.length - 1;
+    bar.style.width = ((i) / (slides.length - 1) * 100) + '%';
+    count.textContent = (i+1) + ' / ' + slides.length;
+  }
+  function go(n){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    render();
+    try{ document.querySelector('.stage').scrollIntoView({behavior:'smooth', block:'start'}); }catch(e){ window.scrollTo(0,0); }
+  }
+  // kind se setea en body para los acentos
+  function syncKind(){ document.body.setAttribute('data-kind', slides[i].getAttribute('data-kind') || 'theory'); }
+  var _render = render;
+  render = function(){ _render(); syncKind(); };
+
+  prev.addEventListener('click', function(){ go(i-1); });
+  next.addEventListener('click', function(){ go(i+1); });
+  document.addEventListener('keydown', function(e){
+    if(e.target && /^(INPUT|TEXTAREA)$/.test(e.target.tagName)) return;
+    if(e.key === 'ArrowRight' || e.key === 'PageDown'){ go(i+1); }
+    else if(e.key === 'ArrowLeft' || e.key === 'PageUp'){ go(i-1); }
+    else if(e.key === 'Home'){ go(0); }
+    else if(e.key === 'End'){ go(slides.length-1); }
+  });
+
+  // tema
+  var themeBtn = document.getElementById('theme');
+  function stored(){ try{ return localStorage.getItem('tema'); }catch(e){ return null; } }
+  function apply(t){ if(t){ document.documentElement.setAttribute('data-theme', t); } }
+  apply(stored());
+  themeBtn.addEventListener('click', function(){
+    var cur = document.documentElement.getAttribute('data-theme');
+    var isDark = cur ? cur === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var nextT = isDark ? 'light' : 'dark';
+    document.documentElement.setAttribute('data-theme', nextT);
+    try{ localStorage.setItem('tema', nextT); }catch(e){}
+  });
+
+  // copiar prompt
+  var copyBtn = document.getElementById('copyBtn');
+  if(copyBtn){
+    copyBtn.addEventListener('click', function(){
+      var txt = document.getElementById('promptText').textContent;
+      function ok(){ var o = copyBtn.textContent; copyBtn.textContent = 'Copiado ✓'; setTimeout(function(){ copyBtn.textContent = o; }, 1600); }
+      if(navigator.clipboard && navigator.clipboard.writeText){
+        navigator.clipboard.writeText(txt).then(ok).catch(select);
+      } else { select(); }
+      function select(){
+        try{
+          var r = document.createRange(); r.selectNodeContents(document.getElementById('promptText'));
+          var sel = window.getSelection(); sel.removeAllRanges(); sel.addRange(r); ok();
+        }catch(e){}
+      }
+    });
+  }
+
+  render();
+})();
+</script>
+</body>
+</html>
