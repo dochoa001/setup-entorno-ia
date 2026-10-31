@@ -1,6 +1,7 @@
 ---
 tipo: ficha-persona
 nombre: (EJEMPLO) Juan Pérez
+aliases: ["(EJEMPLO) Juan Pérez"]
 puesto: Encargado de almacén
 area: Operaciones
 actualizado: 2026-10-24
@@ -23,3 +24,7 @@ Ver `pendientes.md`.
 
 ## Historial
 Minutas en `seguimiento/`.
+
+## Relacionados
+- Proyectos: [[(EJEMPLO) Mejorar el recibo de materiales]]
+- Cliente / área: Operaciones

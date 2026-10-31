@@ -1,6 +1,7 @@
 ---
 tipo: ficha-persona
 nombre:
+aliases:
 puesto:
 area:
 actualizado:
@@ -21,3 +22,7 @@ Ver `pendientes.md` en esta misma carpeta.
 
 ## Historial
 Las minutas de juntas viven en `seguimiento/`.
+
+## Relacionados
+- Proyectos: [[ ]]
+- Cliente / área: [[ ]]

@@ -9,6 +9,26 @@ alimenta información; tú la ordenas.
 Joaquín alimenta; tú mantienes. Si una tarea exige que Joaquín escriba o reacomode archivos
 a mano, ofrécete a hacerlo tú. Nunca le pidas que edite fichas manualmente.
 
+## Regla de interconexión (que el contexto no se pierda)
+Este sistema vale por cómo conecta la información, no por los archivos sueltos. Ninguna ficha
+queda aislada: cada vez que creas o actualizas algo, lo enlazas con `[[ ]]` a lo que se
+relaciona, en los dos sentidos cuando aplique.
+
+- **Persona** ↔ sus proyectos, su cliente/área, sus minutas y sus pendientes.
+- **Proyecto** ↔ las personas que participan y el cliente o área al que pertenece.
+- **Minuta** ↔ la persona y el/los proyecto(s) que trata.
+- **Cliente** ↔ sus proyectos y las personas que lo atienden.
+
+Para que los enlaces funcionen en Obsidian:
+- Enlaza por **nombre**: `[[Juan Pérez]]`, no por el nombre de archivo ni de carpeta.
+- Cada ficha principal lleva en su frontmatter `aliases:` con su nombre (y otros nombres con
+  que se le conozca), para que `[[nombre]]` siempre resuelva aunque el archivo se llame `ficha.md`.
+- Cada ficha nueva incluye su sección `## Relacionados` con los `[[enlaces]]` que correspondan
+  (los formatos de `plantillas/formatos/` ya la traen).
+- Mantén `index.md` como el **mapa**: enlaza desde ahí a las fichas principales con `[[ ]]`.
+- Antes de cerrar una tarea, revisa que lo que tocaste quedó enlazado; si algo quedó suelto,
+  conéctalo. Así, al abrir la carpeta como bóveda en Obsidian, el grafo muestra todo unido.
+
 ## Primera vez (configuración)
 Cuando Joaquín lo abra por primera vez o diga "ayúdame a configurar":
 1. Salúdalo breve y explícale en una frase cómo funciona (él alimenta, tú ordenas).
@@ -38,24 +58,28 @@ Cuando Joaquín lo abra por primera vez o diga "ayúdame a configurar":
 2. Guarda la minuta limpia en `equipo/<persona>/seguimiento/` con el formato `plantillas/formatos/minuta.md`.
 3. Extrae los acuerdos y conviértelos en pendientes en `pendientes.md`, clasificados
    (yo→persona / persona→yo), con fecha de inicio y vencimiento si lo hay.
-4. Devuelve a Joaquín un resumen de 3 líneas: de qué se habló, qué quedó, qué sigue.
+4. Enlaza en la minuta a la `[[persona]]` y al/los `[[proyecto]]` que trata, y referénciala
+   desde el `## Historial` de la ficha de la persona.
+5. Devuelve a Joaquín un resumen de 3 líneas: de qué se habló, qué quedó, qué sigue.
 
 ### Dar de alta una nueva persona
 1. Copia `01-Ferremayoreo/equipo/_ejemplo-persona/` a `equipo/<nombre-con-guiones>/`.
-2. Llena la ficha con `plantillas/formatos/ficha-persona.md` y lo que te diga Joaquín.
+2. Llena la ficha con `plantillas/formatos/ficha-persona.md`; pon su nombre en `aliases:` y enlaza
+   en `## Relacionados` a sus `[[proyecto]]`(s) y, si aplica, a su `[[cliente]]`/área.
 3. Deja `pendientes.md` listo y la carpeta `seguimiento/` creada.
-4. Actualiza `index.md`.
+4. Enlázala desde `index.md` con `[[ ]]` (mantén el mapa al día).
 
 ### Integrar un nuevo cliente
 Cuando Joaquín diga "quiero integrar un nuevo cliente":
 1. Copia `02-Consultoria/_ejemplo-cliente/` a `02-Consultoria/<cliente-con-guiones>/`.
-2. Llena `cliente.md` con `plantillas/formatos/cliente.md` y lo que te comparta.
+2. Llena `cliente.md` con `plantillas/formatos/cliente.md`; pon su nombre en `aliases:` y enlaza
+   en `## Relacionados` a las `[[persona]]`(s) que lo atienden y a sus `[[proyecto]]`(s).
 3. Pregúntale lo esencial (qué hace, qué necesita, contactos) y resúmelo en su `wiki/`.
-4. Lo que no sepa, pendiente. Actualiza `index.md`.
+4. Lo que no sepa, pendiente. Enlázalo desde `index.md` con `[[ ]]` y mantén el mapa al día.
 
 ### Registrar un pendiente
 Clasifícalo (yo→persona / persona→yo o proyecto), ponle fecha de inicio y vencimiento si aplica,
-y estado (abierto / en curso / cerrado).
+y estado (abierto / en curso / cerrado). Déjalo ligado a la `[[persona]]` o `[[proyecto]]` que le corresponde.
 
 ### Revisión semanal (ritual)
 Cuando Joaquín pida "revisión semanal":
@@ -78,7 +102,8 @@ Cuando Joaquín diga "guarda mi clave de …":
 
 ## Convenciones
 - Fechas en nombres de archivo: `AAAA-MM-DD` (ISO), al inicio.
-- Enlaces entre fichas con `[[nombre]]` (para que funcione en Obsidian).
+- Enlaces entre fichas con `[[nombre]]`, por nombre y con `aliases:` en el frontmatter
+  (ver "Regla de interconexión"); así el grafo de Obsidian queda conectado.
 - Cada carpeta principal tiene su `README.md` y, donde aplique, su `AGENTS.md`.
 - Nombres de archivos y carpetas en minúsculas-con-guiones.
 - Mantén `index.md` al día cuando crees o muevas algo.

@@ -1,6 +1,7 @@
 ---
 tipo: proyecto
 nombre:
+aliases:
 estado: en-curso | pausado | terminado
 etapa:
 actualizado:
@@ -22,3 +23,7 @@ actualizado:
 - {{fecha}}:
 
 ## Recursos y enlaces
+
+## Relacionados
+- Personas: [[ ]]
+- Cliente / área: [[ ]]
