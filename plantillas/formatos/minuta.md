@@ -18,3 +18,7 @@ tema:
 - [ ] (quién / qué / vence)
 
 ## Notas
+
+## Relacionados
+- Persona: [[ ]]
+- Proyecto(s): [[ ]]

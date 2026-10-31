@@ -1,6 +1,7 @@
 ---
 tipo: cliente
 nombre:
+aliases:
 estado:
 actualizado:
 ---
@@ -19,3 +20,7 @@ actualizado:
 ## Enlaces
 - Wiki: ./wiki/
 - Recursos: ./recursos/
+
+## Relacionados
+- Personas que lo atienden: [[ ]]
+- Proyectos: [[ ]]

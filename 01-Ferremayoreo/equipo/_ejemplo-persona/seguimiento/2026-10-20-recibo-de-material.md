@@ -22,3 +22,7 @@ Demoras en el recibo de material y propuesta de nuevo formato.
 
 ## Notas
 Ejemplo para mostrar cómo queda una minuta archivada.
+
+## Relacionados
+- Persona: [[(EJEMPLO) Juan Pérez]]
+- Proyecto(s): [[(EJEMPLO) Mejorar el recibo de materiales]]
